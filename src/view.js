@@ -1,7 +1,9 @@
-import { createElement } from './helpers.js';
+import { createElement, EventEmitter } from './helpers.js';
 
-class View {
+class View extends EventEmitter {
 	constructor(){
+		super();
+
 		this.form = document.getElementById('todo-form');
 		this.input = document.getElementById('add-input');
 		this.list = document.getElementById('todo-list');
@@ -20,7 +22,7 @@ class View {
 		return this.addEventListeners(item);
 	}
 
-	addEventListeners(item){
+	addEventListeners(listItem){
 		const checkbox = listItem.querySelector('.checkbox');
 		const editButton = listItem.querySelector('button.edit');
 		const removeButton = listItem.querySelector('button.remove');
@@ -29,7 +31,7 @@ class View {
 		editButton.addEventListener('click', this.handleEdit.bind(this));
 		removeButton.addEventListener('click', this.handleRemove.bind(this));
 
-		return item;
+		return listItem;
 	}
 
 	handleAdd(event){
@@ -40,6 +42,7 @@ class View {
 		const value = this.input.value;
 
 		//add item to model
+		this.emit('add', value);
 	}
 
 	handleToggle({ target }){
@@ -48,6 +51,7 @@ class View {
 		const completed = target.completed;
 
 		//update Model
+		this.emit('toggle', { id, completed });
 	}
 
 	handleEdit({ target }){
@@ -61,6 +65,7 @@ class View {
 
 		if (isEditing) {
 			//update Model
+			this.emit('edit', { id, title });
 		}else{
 			input.value = label.textContent;
 			editButton.textContent = 'Сохранить';
@@ -70,8 +75,10 @@ class View {
 
 	handleRemove({ target }){
 		const listItem = target.parentNode;
+		const id = listItem.getAttribute('data-id');
 
 		//remove item from Mmodel
+		this.emit('remove', id);
 	}
 
 	findListItem(id){
